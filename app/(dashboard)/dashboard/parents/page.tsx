@@ -235,7 +235,10 @@ export default function ParentsPage() {
 
   const { data: parents, isLoading, error } = useSWR<Parent[]>('/api/parents', fetcher);
 
-  const filteredParents = parents?.filter(parent => {
+  // Ensure parents is always an array
+  const parentsArray = Array.isArray(parents) ? parents : [];
+
+  const filteredParents = parentsArray.filter(parent => {
     const matchesSearch = parent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          parent.contact_number?.includes(searchTerm) ||
                          parent.email?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -245,11 +248,11 @@ export default function ParentsPage() {
                           (paymentFilter === 'unpaid' && !parent.payment_status);
 
     return matchesSearch && matchesPayment;
-  }) || [];
+  });
 
-  const totalParents = parents?.length || 0;
-  const paidParents = parents?.filter(p => p.payment_status).length || 0;
-  const totalStudents = parents?.reduce((sum, p) => sum + (p.students?.length || 0), 0) || 0;
+  const totalParents = parentsArray.length;
+  const paidParents = parentsArray.filter(p => p.payment_status).length;
+  const totalStudents = parentsArray.reduce((sum, p) => sum + (p.students?.length || 0), 0);
 
   if (error) {
     return (

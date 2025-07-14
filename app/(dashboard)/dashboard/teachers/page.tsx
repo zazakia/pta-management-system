@@ -299,21 +299,24 @@ export default function TeachersPage() {
     dedupingInterval: 60000,
   });
 
+  // Ensure teachers is always an array
+  const teachersArray = Array.isArray(teachers) ? teachers : [];
+  
   // Filter teachers based on search and school
-  const filteredTeachers = teachers?.filter((teacher: Teacher) => {
+  const filteredTeachers = teachersArray.filter((teacher: Teacher) => {
     const matchesSearch = teacher.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          teacher.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesSchool = !schoolFilter || teacher.school?.id === schoolFilter;
     
     return matchesSearch && matchesSchool;
-  }) || [];
+  });
 
-  const totalTeachers = teachers?.length || 0;
-  const totalClasses = teachers?.reduce((sum: number, teacher: Teacher) => 
-    sum + (teacher.classes?.length || 0), 0) || 0;
-  const totalStudents = teachers?.reduce((sum: number, teacher: Teacher) => 
-    sum + (teacher.classes?.reduce((classSum, cls) => classSum + (cls.students?.length || 0), 0) || 0), 0) || 0;
+  const totalTeachers = teachersArray.length;
+  const totalClasses = teachersArray.reduce((sum: number, teacher: Teacher) => 
+    sum + (teacher.classes?.length || 0), 0);
+  const totalStudents = teachersArray.reduce((sum: number, teacher: Teacher) => 
+    sum + (teacher.classes?.reduce((classSum, cls) => classSum + (cls.students?.length || 0), 0) || 0), 0);
 
   if (error) {
     return (
@@ -402,15 +405,15 @@ export default function TeachersPage() {
           <CardContent className="p-12 text-center">
             <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {teachers?.length === 0 ? 'No teachers found' : 'No teachers match your filters'}
+              {teachersArray.length === 0 ? 'No teachers found' : 'No teachers match your filters'}
             </h3>
             <p className="text-gray-600 mb-4">
-              {teachers?.length === 0 
+              {teachersArray.length === 0 
                 ? 'Get started by adding your first teacher.'
                 : 'Try adjusting your search or filter criteria.'
               }
             </p>
-            {teachers?.length === 0 && (
+            {teachersArray.length === 0 && (
               <Button asChild>
                 <Link href="/dashboard/teachers/new">
                   <Plus className="mr-2 h-4 w-4" />

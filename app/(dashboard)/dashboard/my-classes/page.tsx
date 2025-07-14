@@ -47,9 +47,14 @@ export default function MyClassesPage() {
     );
   }
 
-  const totalStudents = safeClasses.reduce((sum, cls) => sum + (cls.students?.length || 0), 0);
-  const paidStudents = safeClasses.reduce((sum, cls) => 
-    sum + (cls.students?.filter((s: any) => s.payment_status).length || 0), 0);
+  const totalStudents = safeClasses.reduce((sum, cls) => {
+    const studentsArray = Array.isArray(cls.students) ? cls.students : [];
+    return sum + studentsArray.length;
+  }, 0);
+  const paidStudents = safeClasses.reduce((sum, cls) => {
+    const studentsArray = Array.isArray(cls.students) ? cls.students : [];
+    return sum + studentsArray.filter((s: any) => s.payment_status).length;
+  }, 0);
   const paymentRate = totalStudents > 0 ? Math.round((paidStudents / totalStudents) * 100) : 0;
 
   return (

@@ -251,7 +251,7 @@ function Sidebar() {
                     {item.label}
                   </h3>
                   <div className="space-y-1">
-                    {(item as any).items?.map((subItem: any) => (
+                    {Array.isArray((item as any).items) && (item as any).items.map((subItem: any) => (
                       <Link
                         key={subItem.href}
                         href={subItem.href}

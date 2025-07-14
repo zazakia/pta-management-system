@@ -24,7 +24,10 @@ export default function ClassesPage() {
   const { data: classes, error, isLoading } = useSWR('/api/classes', fetcher);
   const { data: profile } = useSWR('/api/profile', fetcher);
 
-  const filteredClasses = (classes || []).filter((cls: any) =>
+  // Ensure classes is always an array
+  const classesArray = Array.isArray(classes) ? classes : [];
+  
+  const filteredClasses = classesArray.filter((cls: any) =>
     cls.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cls.grade_level?.toLowerCase().includes(searchTerm.toLowerCase())
   );

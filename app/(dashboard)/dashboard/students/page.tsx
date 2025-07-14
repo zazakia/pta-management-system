@@ -204,7 +204,10 @@ export default function StudentsPage() {
 
   const { data: students, isLoading, error } = useSWR<Student[]>('/api/students', fetcher);
 
-  const filteredStudents = students?.filter(student => {
+  // Ensure students is always an array
+  const studentsArray = Array.isArray(students) ? students : [];
+
+  const filteredStudents = studentsArray.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.parent?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.student_number?.includes(searchTerm);
@@ -216,10 +219,10 @@ export default function StudentsPage() {
                           (paymentFilter === 'unpaid' && !student.payment_status);
 
     return matchesSearch && matchesClass && matchesPayment;
-  }) || [];
+  });
 
-  const totalStudents = students?.length || 0;
-  const paidStudents = students?.filter(s => s.payment_status).length || 0;
+  const totalStudents = studentsArray.length;
+  const paidStudents = studentsArray.filter(s => s.payment_status).length;
 
   if (error) {
     return (

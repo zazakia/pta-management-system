@@ -27,7 +27,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  const data = await res.json();
+  
+  // If the response is an error object, throw it
+  if (!res.ok || data.error) {
+    throw new Error(data.error || 'Failed to fetch data');
+  }
+  
+  // Ensure we return an array for schools
+  return Array.isArray(data) ? data : [];
+};
 
 interface School {
   id: string;
@@ -150,22 +161,60 @@ export default function SchoolsPage() {
     dedupingInterval: 30000,
   });
 
-  const filteredSchools = schools?.filter((school: School) => {
+  // Ensure schools is always an array
+  const schoolsArray = Array.isArray(schools) ? schools : [];
+
+  const filteredSchools = schoolsArray.filter((school: School) => {
     const matchesSearch = school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          school.address?.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesSearch;
-  }) || [];
+  });
 
-  const totalSchools = schools?.length || 0;
+  const totalSchools = schoolsArray.length;
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-red-600">Error loading schools: {error.message}</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+              <Building2 className="mr-3 h-6 w-6" />
+              School Management
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Manage schools and their information
+            </p>
+          </div>
+          
+          <Button asChild>
+            <Link href="/dashboard/schools/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add School
+            </Link>
+          </Button>
+        </div>
+
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="text-red-500 mb-4">
+              <Building2 className="h-12 w-12 mx-auto" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Failed to load schools
+            </h3>
+            <p className="text-red-600 mb-4">
+              {error.message || 'An unexpected error occurred'}
+            </p>
+            <Button 
+              onClick={() => mutate('/api/schools')}
+              variant="outline"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -201,19 +250,19 @@ export default function SchoolsPage() {
             </div>
             <div>
               <div className="text-2xl font-bold text-green-600">
-                {schools?.reduce((sum: number, school: any) => sum + (school.users_count || 0), 0) || 0}
+                {schoolsArray.reduce((sum: number, school: any) => sum + (school.users_count || 0), 0)}
               </div>
               <div className="text-sm text-gray-600">Total Users</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-orange-600">
-                {schools?.reduce((sum: number, school: any) => sum + (school.classes_count || 0), 0) || 0}
+                {schoolsArray.reduce((sum: number, school: any) => sum + (school.classes_count || 0), 0)}
               </div>
               <div className="text-sm text-gray-600">Total Classes</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-purple-600">
-                {schools?.reduce((sum: number, school: any) => sum + (school.students_count || 0), 0) || 0}
+                {schoolsArray.reduce((sum: number, school: any) => sum + (school.students_count || 0), 0)}
               </div>
               <div className="text-sm text-gray-600">Total Students</div>
             </div>
@@ -252,15 +301,15 @@ export default function SchoolsPage() {
           <CardContent className="p-12 text-center">
             <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {schools?.length === 0 ? 'No schools found' : 'No schools match your search'}
+              {schoolsArray.length === 0 ? 'No schools found' : 'No schools match your search'}
             </h3>
             <p className="text-gray-600 mb-4">
-              {schools?.length === 0 
+              {schoolsArray.length === 0 
                 ? 'Get started by adding your first school.'
                 : 'Try adjusting your search criteria.'
               }
             </p>
-            {schools?.length === 0 && (
+            {schoolsArray.length === 0 && (
               <Button asChild>
                 <Link href="/dashboard/schools/new">
                   <Plus className="mr-2 h-4 w-4" />

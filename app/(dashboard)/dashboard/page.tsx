@@ -78,9 +78,10 @@ function ParentDashboard({ profile }: { profile: any }) {
   });
 
   const safeStudents = Array.isArray(students) ? students : [];
+  const safePayments = Array.isArray(payments) ? payments : [];
   const paidStudents = safeStudents.filter((s: any) => s.payment_status);
   const totalStudents = safeStudents.length;
-  const latestPayment = payments?.[0];
+  const latestPayment = safePayments[0];
 
   return (
     <div className="space-y-6">

@@ -71,9 +71,11 @@ function ParentDashboard({ profile }: { profile: any }) {
   const { data: students } = useSWR(`/api/students?parent_id=${profile.id}`, fetcher);
   const { data: payments } = useSWR(`/api/payments?parent_id=${profile.id}`, fetcher);
 
-  const paidStudents = students?.filter((s: any) => s.payment_status) || [];
-  const totalStudents = students?.length || 0;
-  const latestPayment = payments?.[0];
+  const studentsArray = Array.isArray(students) ? students : [];
+  const paymentsArray = Array.isArray(payments) ? payments : [];
+  const paidStudents = studentsArray.filter((s: any) => s.payment_status);
+  const totalStudents = studentsArray.length;
+  const latestPayment = paymentsArray[0];
 
   return (
     <div className="space-y-6">
@@ -113,7 +115,7 @@ function ParentDashboard({ profile }: { profile: any }) {
             <p className="text-gray-500 text-center py-4">No students linked to your account.</p>
           ) : (
             <div className="space-y-3">
-              {students?.map((student: any) => (
+              {studentsArray.map((student: any) => (
                 <div key={student.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
                   <div>
                     <p className="font-medium">{student.name}</p>
@@ -253,10 +255,16 @@ function TreasurerDashboard({ profile }: { profile: any }) {
 function TeacherDashboard({ profile }: { profile: any }) {
   const { data: classes } = useSWR(`/api/classes?teacher_id=${profile.id}`, fetcher);
   
-  const totalClasses = classes?.length || 0;
-  const totalStudents = classes?.reduce((sum: number, c: any) => sum + (c.students?.length || 0), 0) || 0;
-  const paidStudents = classes?.reduce((sum: number, c: any) => 
-    sum + (c.students?.filter((s: any) => s.payment_status).length || 0), 0) || 0;
+  const classesArray = Array.isArray(classes) ? classes : [];
+  const totalClasses = classesArray.length;
+  const totalStudents = classesArray.reduce((sum: number, c: any) => {
+    const studentsArray = Array.isArray(c.students) ? c.students : [];
+    return sum + studentsArray.length;
+  }, 0);
+  const paidStudents = classesArray.reduce((sum: number, c: any) => {
+    const studentsArray = Array.isArray(c.students) ? c.students : [];
+    return sum + studentsArray.filter((s: any) => s.payment_status).length;
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -296,9 +304,10 @@ function TeacherDashboard({ profile }: { profile: any }) {
             <p className="text-gray-500 text-center py-4">No classes assigned to you.</p>
           ) : (
             <div className="space-y-3">
-              {classes?.map((classItem: any) => {
-                const classPaidStudents = classItem.students?.filter((s: any) => s.payment_status) || [];
-                const classTotal = classItem.students?.length || 0;
+              {classesArray.map((classItem: any) => {
+                const studentsArray = Array.isArray(classItem.students) ? classItem.students : [];
+                const classPaidStudents = studentsArray.filter((s: any) => s.payment_status);
+                const classTotal = studentsArray.length;
                 
                 return (
                   <div key={classItem.id} className="p-4 border rounded-md">

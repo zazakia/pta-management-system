@@ -193,19 +193,22 @@ export default function UsersPage() {
     dedupingInterval: 30000,
   });
 
-  const filteredUsers = users?.filter((user: User) => {
+  // Ensure users is always an array
+  const usersArray = Array.isArray(users) ? users : [];
+  
+  const filteredUsers = usersArray.filter((user: User) => {
     const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesRole = !roleFilter || user.role === roleFilter;
     
     return matchesSearch && matchesRole;
-  }) || [];
+  });
 
-  const userStats = users?.reduce((acc: any, user: User) => {
+  const userStats = usersArray.reduce((acc: any, user: User) => {
     acc[user.role] = (acc[user.role] || 0) + 1;
     return acc;
-  }, {}) || {};
+  }, {});
 
   if (error) {
     return (
@@ -306,15 +309,15 @@ export default function UsersPage() {
           <CardContent className="p-12 text-center">
             <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {users?.length === 0 ? 'No users found' : 'No users match your filters'}
+              {usersArray.length === 0 ? 'No users found' : 'No users match your filters'}
             </h3>
             <p className="text-gray-600 mb-4">
-              {users?.length === 0 
+              {usersArray.length === 0 
                 ? 'Get started by adding your first user.'
                 : 'Try adjusting your search or filter criteria.'
               }
             </p>
-            {users?.length === 0 && (
+            {usersArray.length === 0 && (
               <Button asChild>
                 <Link href="/dashboard/users/new">
                   <Plus className="mr-2 h-4 w-4" />
